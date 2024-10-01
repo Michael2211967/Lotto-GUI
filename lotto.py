@@ -25,14 +25,13 @@ class Lotto:
                         self.user = os.environ['USER']
 
         def lotto_read(self):
-                funktionen.clear()
                 try:         
                         file = open(self.path, "r")
                         lotto = file.readlines()
                         file.close()
                         for i in range(len(lotto)):
                             lotto[i] = lotto[i].rstrip(lotto[i][-1])
-
+                        
                 except:
                         lotto = [f"Datei {self.path} ist nicht im aktuellen Verzeichnis!"]
                 return lotto
@@ -58,22 +57,12 @@ class Lotto:
                 file.close()
                 return tip
 
-        def changedir(self):
-                funktionen.clear()
-                files = os.listdir()
-                files.sort()
-                path = ""
-                for entry in files:
-                        path += "{entry:<30}{bytes:>10} Byte\n".format(
-                                entry=entry,
-                                bytes=os.path.getsize(entry))
-                print(path)
-                newPath = input("Bitte Arbeitsverzeichnis eingeben: ")
+        def changedir(self, newPath):
                 try:
                         os.chdir(newPath)
+                        return 0, newPath
                 except:
-                        print("Verzeichnis '{}' ist nicht vorhanden!".format(newPath))
-                menu = input("Zum Beenden Return drücken:")
+                        return 1, f"in Verzeichnis '{newPath}' kann nicht gewechselt werden!"
 
         def run(self):
                 choice = "-"
