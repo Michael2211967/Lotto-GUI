@@ -1,52 +1,83 @@
 import random as rnd
+import sys
 import os
-from datetime import datetime
+import funktionen
+import datum
 
 class Lotto:
-    def __init__(self, filename):
-        self.path = filename
+        __menutext = """
+*************************
+***  Lotto-Generator  ***
+*************************
 
-    def lotto_read(self):
-        try:
-            if not os.path.exists(self.path):
-                return [f"Datei {self.path} ist nicht im aktuellen Verzeichnis!"]
-            
-            with open(self.path, "r", encoding="utf-8") as file:
-                lines = file.readlines()
-            
-            # Bereinige die Zeilen von Newlines und gib sie zurück
-            return [line.strip() for line in lines if line.strip()]
-        except Exception:
-            return [f"Fehler beim Lesen von {self.path}"]
-
-    def lotto_create(self, row):
-        lotto_zahlen = list(range(1, 50))
-        now = datetime.now()
-        date_str = now.strftime("%d.%m.%Y  %H:%M:%S")
+* Zahlen (A)uslesen
+* Zahlen (E)rstellen
+* (V)erzeichnis wechseln
+* (B)eenden
+        """
         
-        output = [date_str]
-        
-        # Generiere die gewünschte Anzahl an Tippzeilen
-        for i in range(row):
-            tipp = sorted(rnd.sample(lotto_zahlen, 6))
-            tipp_str = " ".join(f"{z:2d}" for z in tipp)
-            output.append(f"{i+1:2d}. {tipp_str}")
-            
-        # Schreibe alles in die Datei
-        try:
-            with open(self.path, "w", encoding="utf-8") as file:
-                for line in output:
-                    file.write(line + "\n")
-        except Exception:
-            pass
-            
-        return output
+        def __init__(self, filename):
+                assert isinstance(filename, object)
+                self.path = filename
+                if sys.platform == "win32":
+                        self.user = os.environ['USERNAME']
+                else:
+                        self.user = os.environ['USER']
 
-    def changedir(self, new_path):
-        try:
-            if new_path:
-                os.chdir(new_path)
-                return 0, new_path
-            return 1, os.getcwd()
-        except Exception:
-            return 1, os.getcwd()
+        def lotto_read(self):
+                try:         
+                        file = open(self.path, "r")
+                        lotto = file.readlines()
+                        file.close()
+                        for i in range(len(lotto)):
+                            lotto[i] = lotto[i].rstrip(lotto[i][-1])
+                        
+                except:
+                        lotto = [f"Datei {self.path} ist nicht im aktuellen Verzeichnis!"]
+                return lotto
+
+        def lotto_create(self, row):
+                lotto=[]
+                lotto.extend(range(1,50))
+                date = funktionen.date()
+                time_now = funktionen.time_now()
+                file = open(self.path, 'w')
+                tip = [f"{date}  {time_now}"]
+                file.write(date + '  ' + time_now)
+                for i in range(row):
+                    row=f"{i+1:2d}. "
+                    ergebnis = rnd.sample(lotto, 6)
+                    ergebnis.sort()
+                    file.write("\n{:2d}. ".format(i+1))
+                    for j in ergebnis:
+                        row = row + f"{j:2d} "
+                        file.write("{:2d} ".format(j))
+                    tip.append(row)
+                file.write("\n")
+                file.close()
+                return tip
+
+        def changedir(self, newPath):
+                try:
+                        os.chdir(newPath)
+                        return 0, newPath
+                except:
+                        return 1, f"in Verzeichnis '{newPath}' kann nicht gewechselt werden!"
+
+        def run(self):
+                choice = "-"
+                while choice not in "Bb":
+                        funktionen.clear()
+                        self.date = datum.datetime()
+                        print("{} {}".format(self.date[0], self.user))
+                        print("\naktuelles Verzeichnis: ", os.getcwd())
+                        print(self.__menutext)
+                        choice = input("Ihre Wahl: ")
+                        if choice in "Aa": self.lotto_read()
+                        elif choice in "Ee": self.lotto_create()
+                        elif choice in "Vv": self.changedir()
+                print("Danke für die Benutzung des Lotto-Generators!")
+                menu = input("Zum Beenden Return drücken")
+
+
+
